@@ -1,0 +1,14 @@
+/* This gate is very usefull for the ALU */
+
+/* Return 1 if in is negative and 0 else */
+
+CHIP IsNegative16 {
+    IN in[16];
+    OUT out;
+
+    PARTS:
+
+    /* Check if the last bit is 1 (which means that the number is
+    negative in 2's complement, else it is positive) */
+    Or(a = in[15], b = false, out = out);
+}

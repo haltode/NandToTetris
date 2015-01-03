@@ -1,0 +1,109 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/05/CPU.hdl
+
+/**
+ * The Central Processing unit (CPU).
+ * Consists of an ALU and a set of registers, designed to fetch and 
+ * execute instructions written in the Hack machine language.
+ * In particular, functions as follows:
+ * Executes the inputted instruction according to the Hack machine 
+ * language specification. The D and A in the language specification
+ * refer to CPU-resident registers, while M refers to the external
+ * memory location addressed by A, i.e. to Memory[A]. The inM input 
+ * holds the value of this location. If the current instruction needs 
+ * to write a value to M, the value is placed in outM, the address 
+ * of the target location is placed in the addressM output, and the 
+ * writeM control bit is asserted. (When writeM=0, any value may 
+ * appear in outM). The outM and writeM outputs are combinational: 
+ * they are affected instantaneously by the execution of the current 
+ * instruction. The addressM and pc outputs are clocked: although they 
+ * are affected by the execution of the current instruction, they commit 
+ * to their new values only in the next time unit. If reset=1 then the 
+ * CPU jumps to address 0 (i.e. sets pc=0 in next time unit) rather 
+ * than to the address resulting from executing the current instruction. 
+ */
+
+CHIP CPU {
+
+    IN  inM[16],         // M value input  (M = contents of RAM[A])
+        instruction[16], // Instruction for execution
+        reset;           // Signals whether to re-start the current
+                         // program (reset=1) or continue executing
+                         // the current program (reset=0).
+
+    OUT outM[16],        // M value output
+        writeM,          // Write into M? 
+        addressM[15],    // Address in data memory (of M)
+        pc[15];          // address of next instruction
+
+    PARTS:
+
+    /* According to the figure 5.9 page 94 */
+
+    /* Select the A Register input between the instruction and the ALU output */
+    Mux16(a = instruction, b = aluOut, sel = instruction[15], out = aRegisterIn);
+
+
+    /* Select if the A Register need to be load */
+
+    /* If the instruction[15] = 0, it is a A instruction */
+    Not(in = instruction[15], out = isAinstruction);
+    /* If the instruction[15] = 1, (it is a C instruction) and the C instruction 
+    pointed to the A Register */
+    And(a = instruction[15], b = instruction[5], out = isCinstructionAregister);
+    /* Load or not the A Register */
+    Or(a = isAinstruction, b = isCinstructionAregister, out = loadAregister);
+
+
+    /* Select if the D Register need to be load */
+
+    /* If the instruction[15] = 1, (it is a C instruction) and the C instruction
+    pointed to D Register */
+    And(a = instruction[15], b = instruction[4], out = loadDregister);
+    DRegister(in = aluOut, load = loadDregister, out = dRegisterOut);
+
+
+    /* Write the address in data memory (of M) and if we write into M */
+
+    ARegister(in = aRegisterIn, load = loadAregister, out = aRegisterOut, out[0..14] = addressM);
+    And(a = instruction[15], b = instruction[3], out = writeM);
+
+
+    Mux16(a = aRegisterOut, b = inM, sel = instruction[12], out = aMRegisterOut);
+
+
+    /* Use the ALU */
+    ALU(x = dRegisterOut, y = aMRegisterOut, zx = instruction[11], nx = instruction[10], zy = instruction[9], ny = instruction[8], f = instruction[7], no = instruction[6], out = aluOut, zr = isAluOutZero, ng = isAluOutNegative);
+
+
+    /* Write into outM */
+    Or16(a = false, b = aluOut, out = outM);
+
+
+    /* isPositive = 1 if the ALU output is positive and 0 else */
+    Or(a = isAluOutZero, b = isAluOutNegative, out = isAluOutZeroOrNegative);
+    Not(in = isAluOutZeroOrNegative, out = isPositive);
+
+    /* Test all the different jump possible */
+    And(a = instruction[0], b = isPositive, out = JGT);
+    And(a = instruction[1], b = isAluOutZero, out = JEQ);
+    And(a = JGT, b = JEQ, out = JGE);
+    And(a = instruction[2], b = isAluOutNegative, out = JLT);
+    And(a = JGT, b = JLT, out = JNE);
+    And(a = JLT, b = JEQ, out = JLE);
+
+    /* And if one of them is 1, then JMP is 1 and 0 else */
+    Or8Way(in[0] = JGT, in[1] = JEQ, in[2] = JGE, in[3] = JLT, in[4] = JNE, in[5] = JLE, in[6..7] = false, out = JMP);
+
+
+    /* If instruction[15] = 1, (it is a C instruction) and the instruction containe
+    a jump, we load the PC counter */
+    And(a = instruction[15], b = JMP, out = loadPC);
+    /* If we dont load the PC counter we increment it */
+    Not(in = loadPC, out = incrementPC);
+
+    /* Use the PC */
+    PC(in = aRegisterOut, load = loadPC, inc = incrementPC, reset = reset, out[0..14] = pc);
+}

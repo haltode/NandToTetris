@@ -1,0 +1,88 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/05/Memory.hdl
+
+/**
+ * The complete address space of the computer's memory,
+ * including RAM and memory mapped I/O. 
+ * The chip facilitates read and write operations, as follows:
+ *     Read:  out(t) = Memory[address(t)](t)
+ *     Write: If load(t-1) then Memory[address(t-1)](t) = in(t-1)
+ * In words: the chip always outputs the value stored at the memory 
+ * location specified by address. If load=1, the in value is loaded 
+ * into the memory location specified by address. This value becomes 
+ * available through the out output in the next time step.
+ * Address space rules:
+ * Only the upper 16K+8K+1 words of the Memory chip are used. 
+ * Access to address>0x6000 is invalid. Access to any address in 
+ * the range 0x4000-0x5FFF results in accessing the screen memory 
+ * map. Access to address 0x6000 results in accessing the keyboard 
+ * memory map. The behavior in these addresses is described in the 
+ * Screen and Keyboard chip specifications given in the book.
+ */
+
+CHIP Memory {
+    IN in[16], load, address[15];
+    OUT out[16];
+
+    PARTS:
+
+    /* address[14] = 0 -> the address is in the RAM part
+        address[14] = 1 -> the address is in the Memory map part
+    */
+    /* Select if the address is in the RAM or in the memory map 
+    (screen or keyboard) */
+    DMux(in = load, sel = address[14], a = isOutputRAM, b = isOutputMemoryMap);
+
+
+
+    /* RAM part */
+    
+    /* If it is in the RAM part, use RAM16K */
+    RAM16K(in = in, load = isOutputRAM, address = address[0..13], out = ramOut);
+
+
+
+    /* Memory map part */
+
+    /* Screen ->
+
+        IN
+
+            in[16] -> what to write 
+            load -> write-enable bit
+            address[13] -> where to write
+
+    OUT
+
+            out[16] -> screen value at the given address
+    */
+    Screen(in = in, load = isOutputMemoryMap, address = address[0..12], out = screenOut);
+
+    /* Keyboard ->
+
+        OUT
+
+            out[16] -> the ASCII code of the pressed key, or one of
+            the special codes listed in figure 5.6 page 91, or 0 if
+            no key is pressed
+
+    */
+    Keyboard(out = keyboardOut);
+
+
+    /* address[13] = 0 -> the address is in the screen memory map part
+        address[13] = 1 -> the address is in the keyboard memory map part
+    */
+    /* Select if the address is in the screen memory map part or in the
+    keyboard memory map part */
+    Mux16(a = screenOut, b = keyboardOut, sel = address[13], out = memoryMapOut);
+
+
+    /* address[14] = 0 -> the address is in the RAM part
+        address[14] = 1 -> the address is in the Memory map part
+    */
+    /* Select if the output is the RAM's output or the Memory map's output */
+    Mux16(a = ramOut, b = memoryMapOut, sel = address[14], out = out);
+}

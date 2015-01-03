@@ -1,0 +1,22 @@
+/* Not in the book but usefull for the ALU */
+
+/**
+ * 16-way or gate: out = in[0] or in[1] or ... or in[15].
+ */
+
+CHIP Or16Way {
+
+    IN in[16];
+    OUT out;
+
+    PARTS:
+
+    /* Compare all the input each other */
+
+    /* Compare bits : 0 to 7 */
+    Or8Way(in = in[0..7], out = orOut0to7);
+    /* Compare bits : 8 to 15 */
+    Or8Way(in = in[8..15], out = orOut8t015);
+
+    Or(a = orOut0to7, b = orOut8t015, out = out);
+}

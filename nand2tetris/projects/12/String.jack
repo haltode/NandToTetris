@@ -1,0 +1,198 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/12/String.jack
+
+/**
+ * Represents a String object. Implements the String type.
+ */
+class String {
+	field Array string;
+	field int length;
+	field int currentChar;
+	
+    /** Constructs a new empty String with a maximum length of maxLength. */
+    constructor String new(int maxLength) {
+		/* ERR14 : String.new - Maximum length must be non-negative */
+    	if(maxLength < 0)
+    	{
+    		do Sys.error(14);
+    	}
+    	
+	    /* If the maxLength is not 0, we create a new array for the string */
+    	if(~(maxLength = 0))
+    	{
+    		let string = Array.new(maxLength);
+    	}	
+    	
+		let length = maxLength;
+    	let currentChar = 0;
+    	
+    	return this;
+    }
+
+    /** De-allocates the string and frees its space. */
+    method void dispose() {
+    	/* If we created an array for the string, we dispose it */
+    	if(~(length = 0))
+    	{
+    		do string.dispose();
+    	}
+    	do Memory.deAlloc(this);
+    	
+    	return ;
+    }
+
+    /** Returns the current length of this String. */
+    method int length() {
+    	return currentChar;
+    }
+
+    /** Returns the character at location j. */
+    method char charAt(int j) {
+		/* ERR15 : String.charAt - String index out of bounds */
+    	if(j > length)
+    	{
+    		do Sys.error(15);
+    	}
+    	
+    	return string[j];
+    }
+
+    /** Sets the j'th character of this string to be c. */
+    method void setCharAt(int j, char c) {
+    	/* ERR16 : String.setCharAt - String index out of bounds */
+    	if(j > length)
+    	{
+    		do Sys.error(16);
+    	}
+    	
+    	let string[j] = c;
+    	
+    	return ;
+    }
+
+    /** Appends the character c to the end of this String.
+     *  Returns this string as the return value. */
+    method String appendChar(char c) {
+    	/* ERR17 : String.appendChar - String is full */
+    	if(currentChar = length)
+    	{
+    		do Sys.error(17);
+    	}
+    	
+		do setCharAt(currentChar, c);
+		let currentChar = currentChar + 1;
+    	    	
+    	return this;
+    }
+
+    /** Erases the last character from this String. */
+    method void eraseLastChar() {
+    	/* ERR18 : String.eraseLastChar - String is empty */
+    	if(currentChar = 0)
+    	{
+    		do Sys.error(18);
+    	}
+    	
+	    let currentChar = currentChar - 1;
+    	do setCharAt(currentChar, 0);
+    	
+    	return ;
+    }
+
+    /** Returns the integer value of this String until the first non
+     *  numeric character. */
+    method int intValue() {
+    	/* First we check if the string is negative (if the first character is
+    	45, the '-' character), then we compute each number and add them
+    	together. Finally if the number was negative we return -v, else we
+    	return v */
+		var int value;
+		var int isNegative;
+		var int indexString;		
+		
+		let value = 0;
+		let isNegative = 0;
+		let indexString = 0;
+		
+		if(string[0] = 45)
+		{
+			let indexString = 1;
+			let isNegative = 1;
+		}
+		
+		while(indexString < currentChar)
+		{
+			let value = (value * 10) + (string[indexString] - 48);
+			
+			let indexString = indexString + 1;
+		}
+		
+		if(isNegative)
+		{
+			return -value;
+		}
+		else
+		{
+			return value;
+		}
+    }
+
+    /** Sets this String to hold a representation of the given number. */
+    method void setInt(int number) {
+    	/* First we check if the number is negative, if it is the case we init
+    	the string length to 1, the currentChar to 0, and we append the
+    	character 45 ('-'), then we call the function setInt but with the
+    	inverse of the number. If the number is positive, and < 10, we append
+    	the digit representation of the character. If the number is positive
+    	and > 10, we call the function setInt but with number / 10 */
+    	var int lastDigit;
+    	
+    	let lastDigit = number - ((number / 10) * 10);
+    	
+    	if(number < 0)
+    	{
+    		let length = 1;
+    		let currentChar = 0;
+    		
+    		do appendChar(45);
+    		do setInt(-number);
+    		
+    		return ;
+    	}
+    	if(number < 10)
+    	{
+    		if(~((string[0] = 45) & (length = 1)))
+    		{
+    			let length = 0;
+    			let currentChar = 0;
+    		}
+    		let length = length + 1;
+    		do appendChar(lastDigit + 48);
+    	}
+    	else
+    	{
+    		do setInt(number / 10);
+    		let length = length + 1;
+    		do appendChar(lastDigit + 48);
+    	}
+    	
+    	return ;
+    }
+
+    /** Returns the new line character. */
+    function char newLine() {
+    	return 128;
+    }
+
+    /** Returns the backspace character. */
+    function char backSpace() {
+    	return 129;
+    }
+
+    /** Returns the double quote (") character. */
+    function char doubleQuote() {
+    	return 34;
+    }
+}

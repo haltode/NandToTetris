@@ -1,0 +1,172 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/12/Math.jack
+
+/**
+ * A basic math library.
+ */
+class Math {
+	static Array twoToThe;
+
+    /** Initializes the library. */
+    function void init() {
+		let twoToThe = Array.new(16);
+		
+		let twoToThe[0] = 1;
+        let twoToThe[1] = 2;
+        let twoToThe[2] = 4;
+        let twoToThe[3] = 8;
+        let twoToThe[4] = 16;
+        let twoToThe[5] = 32;
+        let twoToThe[6] = 64;
+        let twoToThe[7] = 128;
+        let twoToThe[8] = 256;
+        let twoToThe[9] = 512;
+        let twoToThe[10] = 1024;
+        let twoToThe[11] = 2048;
+        let twoToThe[12] = 4096;
+        let twoToThe[13] = 8192;
+        let twoToThe[14] = 16384;
+        let twoToThe[15] = 32726 + 42; // 32768 is too big
+        
+        return ;
+    }
+
+    /** Returns the absolute value of x. */
+    function int abs(int x) {
+    	if(x < 0)
+    	{
+    		return -x;
+    	}
+    	else
+    	{
+    		return x;
+    	}
+    }
+    
+    /* Retunrs true if the j-th bit of the integer x is 1 and false otherwise */
+    function boolean bit(int x, int j)
+    {
+    	return ~((twoToThe[j] & x) = 0);
+    }
+
+    /** Returns the product of x and y. */
+    /* x and y are 16 bits numbers */
+    function int multiply(int x, int y) {
+    	var int sum, shiftedX;
+    	var int index;
+    	
+    	let sum = 0;
+    	let shiftedX = x;
+    	let index = 0;
+    	
+    	while(index < 16)
+    	{
+    		if(Math.bit(y, index))
+    		{
+    			let sum = sum + shiftedX;
+    		}
+    		let shiftedX = shiftedX + shiftedX;
+    		
+    		let index = index + 1;
+    	}
+    	
+    	return sum;
+    }
+
+    /** Returns the integer part of x/y. */
+    /* x and y are 16 bits numbers */
+    function int divide(int x, int y) {
+		var int a, b;
+    	var int q;
+    	
+    	/* ERR3 : Math.divide - Division by zero */
+    	if(y = 0)
+    	{
+    		do Sys.error(3);
+    	}
+
+		let a = Math.abs(x);
+		let b = Math.abs(y);
+
+		if(b > a)
+		{
+			return 0;
+		}
+		let q = Math.divide(a, b + b);
+		if((a - (2 * q * b)) < b)
+		{
+			let q = q + q;
+		}
+		else
+		{
+			let q = (q + q) + 1;
+		}
+		
+		if((x < 0) | (y < 0))
+		{
+			return -q;
+		}
+		else
+		{
+			return q;
+		}
+    }
+
+    /** Returns the integer part of the square root of x. */
+    /* x is 16 bits number */
+    function int sqrt(int x) {
+    	var int y, value, valueSquared;
+    	var int index;
+    	
+    	/* ERR4 : Math.sqrt - Cannot compute square root of a negative number */
+    	if(x < 0)
+    	{
+    		do Sys.error(4);
+    	}
+    	
+    	let y = 0;
+    	/* index = n / 2 - 1 (n = number of bits in x = 16) */
+    	let index = 7;
+    	
+    	while(~(index < 0))
+    	{
+    		let value = y + twoToThe[index];
+    		let valueSquared = value * value;
+    		
+    		if(((valueSquared < x) | (valueSquared = x)) & (valueSquared > 0))
+    		{
+    			let y = value;
+    		}
+    	
+    		let index = index - 1;
+    	}
+    	
+    	return y;
+    }
+
+    /** Returns the greater number. */
+    function int max(int a, int b) {
+    	if(a > b)
+    	{
+    		return a;
+    	}
+    	else
+    	{
+    		return b;
+    	}
+    }
+
+    /** Returns the smaller number. */
+    function int min(int a, int b) {
+    	if(a < b)
+    	{
+    		return a;
+    	}
+    	else
+    	{
+    		return b;
+    	}
+    }
+}
