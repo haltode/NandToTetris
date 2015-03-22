@@ -1,5 +1,7 @@
 # Hack
 
+*Date du projet : Février 2014 à Avril 2014*
+
 Projet Hack du livre *The Elements of Computing Systems : Building a Modern Computer from First Principles*.
 
 Hack est le nom du projet qui consiste à :
