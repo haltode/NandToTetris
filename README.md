@@ -14,9 +14,7 @@ Le projet consiste donc à créer :
 - un **compilateur** complet pour le langage Jack (le langage de base de l’ordinateur).
 - un **mini-OS** nous permettant d'avoir des appels systèmes basiques.
 
-J’ai réalisé ce projet à l’aide du livre *The Elements of Computing Systems : Building a Modern Computer from First Principles*, vous pouvez retrouver une description et mon avis sur ce livre [ici](napnac.ga/livres/the_elements_of_computing_systems.html).
-
-Ce livre fournit des émulateurs, et des fichiers de tests pour la création de ce projet, ainsi que les explications nécessaires.
+J’ai réalisé ce projet à l’aide du livre *The Elements of Computing Systems : Building a Modern Computer from First Principles*, il fournit des émulateurs et des fichiers de tests pour la création de ce projet, ainsi que les explications nécessaires.
 
 ### L'ordinateur
 
@@ -72,3 +70,13 @@ class Main
    }
 }
 ```
+
+## Lien
+
+Le site du livre : <http://www.nand2tetris.org/>
+
+D'autres liens utiles à propos du projet :
+
+- L'intégralité du livre en format .pdf : <http://www.nand2tetris.org/course.php>
+- Le livre en format paper : <http://www.nand2tetris.org/book.php>
+- Tous les fichiers fournit avec le livre (émulateurs, fichiers tests etc.) : <http://www.nand2tetris.org/software.php>
